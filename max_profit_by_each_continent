@@ -1,0 +1,66 @@
+
+-- create
+CREATE TABLE country (
+  countryid int,
+  countryN TEXT 
+  
+);
+CREATE TABLE ordered (
+oid int,
+cid int,
+pprice int,
+rprice int,
+quantity int 
+);
+INSERT INTO ordered VALUES (1,1,2,3,5);
+INSERT INTO ordered VALUES (2,1,10,12,7);
+INSERT INTO ordered VALUES (3,2,3,4,2);
+INSERT INTO ordered VALUES (4,2,5,10,1);
+INSERT INTO ordered VALUES (5,3,7,8,100);
+INSERT INTO ordered VALUES (6,4,5,5,2);
+INSERT INTO ordered VALUES (7,5,10,12,1);
+INSERT INTO ordered VALUES (8,6,10,10,2);
+INSERT INTO ordered VALUES (8,6,10,20,1);
+
+-- insert
+INSERT INTO country VALUES (1, 'usa');
+INSERT INTO country VALUES (2,'uk');
+INSERT INTO country VALUES (3,'ind');
+INSERT INTO country VALUES (4, 'aus');
+INSERT INTO country VALUES (5,'pak');
+INSERT INTO country VALUES (6,'nit');
+
+
+with cte as (
+select cid , sum(quantity*(rprice - pprice)) as total_profit from ordered 
+group by cid),
+cte2 as (
+select case when countryN='uk' or countryN='usa' then 'A' 
+when countryN='pak'  then 'C' 
+else 'B' end as grade , cid, total_profit
+from country join cte
+on country.countryid=cte.cid 
+),
+cte3 as (
+select  grade , cid, total_profit,
+row_number() over(partition by grade order by total_profit desc) as r_num
+from cte2 
+),
+-- cte5 as (
+-- select  grade , cid, total_profit, r_num
+-- from cte4 where r_num=1
+-- ),
+cte4 as (
+SELECT case when countryN='uk' or countryN='usa' then 'A' 
+when countryN='pak'  then 'C' 
+else 'B' end as grade , group_concat(distinct countryN separator ', ') as countries,
+sum(total_profit)  as total_profit_res
+FROM country join cte 
+on country.countryid= cte.cid
+group by grade 
+)
+-- fetch 
+SELECT cte3.grade , countries ,total_profit_res, countryN FROM cte3
+join cte4 on cte3.grade=cte4.grade join country on country.countryid=cte3.cid 
+where r_num=1
+;
