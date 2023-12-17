@@ -64,3 +64,10 @@ SELECT cte3.grade , countries ,total_profit_res, countryN FROM cte3
 join cte4 on cte3.grade=cte4.grade join country on country.countryid=cte3.cid 
 where r_num=1
 ;
+
+Output:
+
+grade	  countries	            total_profit	max(countryN)
+A     	uk,   usa	            26	          usa
+B     	aus,   ind,   nit	    110	          ind
+C      	pak                  	2 	          pak
